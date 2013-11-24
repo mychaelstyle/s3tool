@@ -10,6 +10,10 @@ import com.mychaelstyle.aws.ConfigException;
 
 public class Cli {
 
+    public static final String CMD_COPY = "cp";
+    public static final String CMD_MOVE = "mv";
+    public static final String CMD_REMOVE = "rm";
+
     /**
      * main
      * @param args
@@ -30,10 +34,12 @@ public class Cli {
         }
 
         try {
-            if(options.containsKey("cp")){
+            if(options.containsKey(CMD_COPY)){
                 copy(pathes,options);
-            }else if(options.containsKey("mv")){
+            }else if(options.containsKey(CMD_MOVE)){
                 move(pathes,options);
+            }else if(options.containsKey(CMD_REMOVE)){
+                remove(pathes,options);
             }
         } catch(RuntimeException e){
             System.err.println(e.getMessage());
@@ -42,7 +48,7 @@ public class Cli {
         }
     }
 
-    private static boolean copy(List<String> pathes, Map<String,String> options) throws ConfigException {
+    public static boolean copy(List<String> pathes, Map<String,String> options) throws ConfigException {
         if(pathes.size()<2){
             System.err.println("File pathes is required!");
             return false;
@@ -54,22 +60,21 @@ public class Cli {
            String bucket = source.substring(0,source.indexOf(":"));
            String uri = source.substring(source.indexOf(":")+1);
            Transporter.get(Transporter.AP_NORTHEAST_1, bucket, uri, dest);
-        } else {
+        } else if(dest.indexOf(":")>0){
             // if source is in local, transfer from local to remote
-           String bucket = dest.substring(0,source.indexOf(":"));
-           String uri = dest.substring(source.indexOf(":")+1);
+           String bucket = dest.substring(0,dest.indexOf(":"));
+           String uri = dest.substring(dest.indexOf(":")+1);
            Transporter.put(new File(source), Transporter.AP_NORTHEAST_1, bucket, uri);
         }
         return true;
     }
 
-    private static boolean move(List<String> pathes, Map<String,String> options) throws ConfigException {
+    public static boolean move(List<String> pathes, Map<String,String> options) throws ConfigException {
       if(copy(pathes,options)){
         String source = pathes.get(0);
-        String dest   = pathes.get(1);
         if(source.indexOf(":")>0){
-          String bucket = dest.substring(0,source.indexOf(":"));
-          String uri = dest.substring(source.indexOf(":")+1);
+          String bucket = source.substring(0,source.indexOf(":"));
+          String uri = source.substring(source.indexOf(":")+1);
           Transporter.delete(Transporter.AP_NORTHEAST_1, bucket, uri);
         } else {
           new File(source).delete();
@@ -77,5 +82,17 @@ public class Cli {
         return true;
       }
       return false;
+    }
+
+    public static boolean remove(List<String> pathes, Map<String,String> options) throws ConfigException{
+      String source = pathes.get(0);
+      if(source.indexOf(":")>0){
+        String bucket = source.substring(0,source.indexOf(":"));
+        String uri = source.substring(source.indexOf(":")+1);
+        Transporter.delete(Transporter.AP_NORTHEAST_1, bucket, uri);
+      } else {
+        new File(source).delete();
+      }
+      return true;
     }
 }
