@@ -1,0 +1,11 @@
+#!/bin/sh
+
+CURDIR=`pwd`
+BINDIR=`dirname $0`
+cd $BINDIR
+BINDIR=`pwd`
+BINPATH="${BINDIR}/s3-jar --rm ${@}"
+$BINPATH
+
+exit
+

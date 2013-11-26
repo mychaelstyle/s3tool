@@ -1,18 +1,26 @@
 package com.mychaelstyle.aws.s3;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
+import com.amazonaws.services.s3.model.DeleteBucketRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.mychaelstyle.aws.ConfigException;
 
 import static com.mychaelstyle.aws.Util.*;
@@ -153,8 +161,65 @@ public class Transporter {
      * @param tableName
      * @throws ConfigException
      */
-    public static void createTable(String region, String tableName) throws ConfigException {
+    public static void createBucket(String region, String tableName) throws ConfigException {
         AmazonS3Client client = getClient(region);
         client.createBucket(new CreateBucketRequest(tableName));
+    }
+
+    /**
+     * delete bucket
+     * @param region
+     * @param tableName
+     * @throws ConfigException
+     */
+    public static void deleteBucket(String region, String tableName) throws ConfigException {
+        AmazonS3Client client = getClient(region);
+        client.deleteBucket(new DeleteBucketRequest(tableName));
+    }
+
+    /**
+     * list
+     * @param region
+     * @param bucketName
+     * @param uri
+     * @return
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     * @throws ConfigException
+     */
+    public static List<FileInfo> list(String region, String bucketName, String uri, boolean recursive)
+            throws AmazonServiceException, AmazonClientException, ConfigException{
+//        ObjectListing objects = getClient(region).listObjects(bucketName, uri);
+        ListObjectsRequest request = new ListObjectsRequest()
+        .withBucketName(bucketName).withPrefix(uri).withDelimiter("/");
+        ObjectListing objects = getClient(region).listObjects(request);
+        List<FileInfo> files = new ArrayList<FileInfo>();
+        for(S3ObjectSummary summary : objects.getObjectSummaries()){
+            String name = summary.getKey();
+//            if(null!=name && (recursive || !name.contains("/"))){
+                FileInfo finfo = new FileInfo();
+                finfo.name = summary.getKey();
+                finfo.type =  summary.getStorageClass();
+                finfo.size =  summary.getSize();
+                finfo.date = summary.getLastModified();
+                files.add(finfo);
+//            }
+        }
+        return files;
+    }
+
+    /**
+     * list not recursive
+     * @param region
+     * @param bucketName
+     * @param uri
+     * @return
+     * @throws AmazonServiceException
+     * @throws AmazonClientException
+     * @throws ConfigException
+     */
+    public static List<FileInfo> list(String region, String bucketName, String uri)
+            throws AmazonServiceException, AmazonClientException, ConfigException{
+        return list(region,bucketName,uri,false);
     }
 }

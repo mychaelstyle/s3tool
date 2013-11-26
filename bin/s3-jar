@@ -1,0 +1,14 @@
+#!/bin/sh
+
+CURDIR=`pwd`
+BINDIR=`dirname $0`
+cd $BINDIR
+BINDIR=`pwd`
+cd ..
+PJTDIR=`pwd`
+
+JARPATH="${PJTDIR}/build/libs/s3tool-0.1.0.jar ${@}"
+
+java -jar $JARPATH
+
+exit

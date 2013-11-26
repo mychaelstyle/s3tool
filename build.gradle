@@ -37,6 +37,7 @@ jar {
     attributes 'Implementation-Title': 'mychaelstyle s3tool', 'Implementation-Version': 0.1
     attributes "Main-Class" : "com.mychaelstyle.aws.s3.Cli"
   }
+  from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
 }
 
 task writePom << {
