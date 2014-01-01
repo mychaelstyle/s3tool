@@ -174,13 +174,21 @@ public class Cli {
       if(uri.indexOf(":")>0){
           target.put("location", "remote");
           String[] elms = uri.split(":");
-
+          if(elms.length>=3){
+              target.put("region",elms[0]);
+              target.put("bucket", elms[1]);
+              target.put("path", elms[2]);
+          } else if(elms.length==2){
+              target.put("region", getRegion());
+              target.put("bucket",elms[0]);
+          }
       } else {
           target.put("location", "local");
           target.put("path", uri);
       }
       return target;
     }
+
     /**
      * region
      * @return region name strings
@@ -195,5 +203,16 @@ public class Cli {
         } else {
             return region;
         }
+    }
+    /**
+     * get bucket
+     * @return
+     */
+    private static String getBucket(){
+        String bucket = System.getenv(ENV_CURRENT_BUCKET);
+        if(null==bucket || 0==bucket.length()){
+            bucket = System.getenv(ENV_BUCKET);
+        }
+        return bucket;
     }
 }

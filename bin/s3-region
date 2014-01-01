@@ -1,0 +1,7 @@
+#!/bin/sh
+
+S3TOOL_CURRENT_REGION="${1}"
+echo $S3TOOL_CURRENT_REGION
+export S3TOOL_CURRENT_REGION
+
+/bin/bash

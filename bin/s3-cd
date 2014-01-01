@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo ${1}
+
+export S3TOOL_CURRENT_PATH=${1}
+
+exec $SHELL
+
